@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Roberto Quintanilla"]
   spec.email         = ["roberto.quintanilla@gmail.com"]
   spec.summary       = %q{A ruby library for generating REST Api documentation using API Blueprint}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
+  spec.description   = %q{A ruby library for generating REST Api documentation using API Blueprint}
   spec.homepage      = ""
   spec.license       = "MIT"
 
