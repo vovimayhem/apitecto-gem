@@ -1,6 +1,6 @@
 # Apitecto
 
-TODO: Write a gem description
+Finally I'm having time to work in this!!!! No more lame-itecto!
 
 ## Installation
 
