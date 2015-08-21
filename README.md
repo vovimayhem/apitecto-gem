@@ -20,6 +20,10 @@ Or install it yourself as:
 
 ## Usage
 
+Some notes while I make a proper and decent readme:
+1. Create the apitecto initializer on spec/support/apitecto.rb
+2. You can see a pretty version of your generated api blueprint using [aglio](https://github.com/danielgtaylor/aglio)
+
 TODO: Write usage instructions here
 
 ## Contributing

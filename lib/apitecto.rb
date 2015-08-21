@@ -1,10 +1,11 @@
 require "apitecto/version"
 require "matter_compiler/blueprint"
+require "rspec"
 
 module Apitecto
   mattr_reader    :blueprints, :lines_of_spec
   mattr_accessor  :output_dir
-  
+
   def self.blueprints; @@blueprints ||= {}; end
   def self.blueprint_exists?(blueprint_name); blueprints.has_key?(blueprint_name); end
 
@@ -21,6 +22,7 @@ module Apitecto
   end
 end
 
+# TODO: This is a BIG, NASTY chunk of code we really need to split out...
 RSpec.configure do |config|
 
   config.before(:suite) do
@@ -35,7 +37,7 @@ RSpec.configure do |config|
       ################################################################################################
       #
       lines_of_spec = Apitecto.get_lines_of_spec rspec_example.metadata[:file_path]
-      
+
       ##############################################################################
       # Find or create the Root AST node:
       rest_api_name = rspec_example.metadata[:rest_api_name] || :default
@@ -50,7 +52,7 @@ RSpec.configure do |config|
       blueprint_ast[:description] = blueprint_ast[:description] || rspec_example.metadata[:rest_api_description]
 
       ##############################################################################################
-      # Find the rspec_example's Example Groups metadata mappable to 
+      # Find the rspec_example's Example Groups metadata mappable to
       # API Blueprint's Resource Group, Resource and Action:
       rspec_action_metadata         = rspec_example.metadata[:example_group]
       rspec_resource_metadata       = rspec_action_metadata[:parent_example_group]
@@ -58,9 +60,9 @@ RSpec.configure do |config|
 
       ##############################################################################################
       # Retrieve or form the resource group AST:
-      
+
       # ...find:
-      resource_group_ast = blueprint_ast[:resourceGroups].detect do |resource_group| 
+      resource_group_ast = blueprint_ast[:resourceGroups].detect do |resource_group|
         resource_group[:rspec_file_path] == rspec_resource_group_metadata[:file_path]
       end
 
@@ -74,7 +76,7 @@ RSpec.configure do |config|
 
         resource_group_comment_range = resource_group_comment_start_line_number..resource_group_comment_end_line_number
         resource_group_comment_lines = lines_of_spec.select { |key| resource_group_comment_range.include? key }.values.compact
-        
+
         resource_group_name = resource_group_comment_lines.detect { |line| line =~ /\A#\s+(.+)/i }
         resource_group_name = $1 unless resource_group_name.blank?
         resource_group_name = rspec_resource_group_metadata[:description] unless resource_group_name.present?
@@ -98,9 +100,9 @@ RSpec.configure do |config|
 
       ##############################################################################################
       # Retrieve or form the example's resource AST:
-      
+
       # ...find:
-      resource_ast = resource_group_ast[:resources].detect do |r| 
+      resource_ast = resource_group_ast[:resources].detect do |r|
         r[:sort_order] == rspec_resource_metadata[:line_number]
       end
 
@@ -114,7 +116,7 @@ RSpec.configure do |config|
 
         resource_comment_range = resource_comment_start_line_number..rspec_resource_metadata[:line_number]
         resource_comment_lines = lines_of_spec.select { |key| resource_comment_range.include? key }.values.compact
-        
+
         resource_name         = resource_comment_lines.detect { |line| line =~ /\A#\s+(.+)\[(.+)\]/i }
         resource_name         = $1.strip unless resource_name.blank?
         resource_uri_template = $2.strip unless resource_name.blank?
@@ -160,7 +162,7 @@ RSpec.configure do |config|
 
         action_comment_range = action_comment_start_line_number..rspec_action_metadata[:line_number]
         action_comment_lines = lines_of_spec.select { |key| action_comment_range.include? key }.values.compact
-        
+
         # 1st try: Group Comments in MD:
         action_name   = action_comment_lines.detect { |line| line =~ /\A#\s+(.+)\[(.+)\]/i }
         action_name   = $1.strip unless action_name.blank?
@@ -174,7 +176,7 @@ RSpec.configure do |config|
 
         # abort ast if no method was found...
         if action_method.present?
-          
+
           action_description = action_comment_lines.select { |line| line !~ /\A#|\s+\+/i }.map(&:strip)
           action_description.shift  if action_description.first.blank?
           action_description.pop    if action_description.last.blank?
@@ -191,9 +193,9 @@ RSpec.configure do |config|
           action_ast = resource_ast[:actions].last
         end
       end
-      
+
       if action_ast.present?
-        
+
         ##############################################################################################
         # Form the transaction example AST + add request & response AST's
         example_comment_start_line_number = rspec_example.metadata[:line_number]
@@ -203,7 +205,7 @@ RSpec.configure do |config|
 
         example_comment_range = example_comment_start_line_number..rspec_example.metadata[:line_number]
         example_comment_lines = lines_of_spec.select { |key| example_comment_range.include? key }.values.compact
-        
+
         # 1st try: Group Comments in MD:
         example_name          = example_comment_lines.detect { |line| line =~ /\A#\s+(.+)\s+\((.+)\)|#\s+(.+)\z/i }
         example_content_type  = $2.strip if example_name.present? && $2.present?
@@ -287,18 +289,21 @@ RSpec.configure do |config|
         resource_group_ast[:resources].sort!(&sorter)
       end
       blueprint_ast[:resourceGroups].sort!(&sorter)
-      
+
       # Generar el directorio a partir del nombre del api:
       api_docs_path = File.join(Apitecto.output_dir, api_name)
       Dir.mkdir(api_docs_path) unless Dir.exists?(api_docs_path)
 
       # Generar el archivo de API Blueprint:
       api_blueprint_path = File.join(api_docs_path, "api_blueprint.md")
-      
+
       blueprint = MatterCompiler::Blueprint.new(blueprint_ast)
-      
+
       File.open(api_blueprint_path, "w") { |f| f.write blueprint.serialize }
-      
+
     end
   end
 end
+
+
+############################

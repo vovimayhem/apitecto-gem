@@ -14,3 +14,19 @@
 mkmf.log
 .ruby-version
 /*.gem
+
+
+# Ignore development with Docker + Compose artifacts:
+/vendor/bundle
+/bin
+
+# Ignore bash / IRB / Byebug history files
+/.bash_history
+/.byebug_hist
+/.pry_history
+/.guard_history
+
+# NodeJS + NPM + Aglio artifacts:
+/.node-gyp
+/.npm
+/lib/node_modules

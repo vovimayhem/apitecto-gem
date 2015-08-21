@@ -1,0 +1,11 @@
+---
+# App Guard: Keeps running tests on a separate process:
+test:
+  image: vovimayhem/app-dev:mri-2.2 # A ruby image with DTrace enabled for dev
+  command: guard start --no-bundler-warning --no-interactions
+  volumes:
+    - .:/app
+  environment:
+    # Run the app in the 'test' environment, instead of the default 'developent'
+    RACK_ENV: test
+    RAILS_ENV: test
