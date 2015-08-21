@@ -30,3 +30,9 @@ mkmf.log
 /.node-gyp
 /.npm
 /lib/node_modules
+
+# Example app ignores:
+/example/db/*.sqlite3
+/example/doc/apitecto-example-api/*.md
+/example/log/*
+/example/tmp/*
